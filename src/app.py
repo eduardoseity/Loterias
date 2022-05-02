@@ -1,10 +1,10 @@
-from flask import Flask
+from flask import Flask, Response, request
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-import json
 
 app = Flask(__name__)
+app.debug = True
 
 lottery = ''
 
@@ -22,7 +22,16 @@ def lotofacil():
     }
     global lottery
     lottery = Lottery('Lotofacil', lottery_config)
-    return 'ok'
+    resp = Response('OK')
+    resp.headers.add('Access-Control-Allow-Origin', '*')
+    return resp
+
+@app.route('/addGame', methods=['POST'])
+def add_game():
+    resp = Response('OK')
+    resp.headers.add('Access-Control-Allow-Origin', '*')
+    print(request.args.get("numbers"))
+    return resp
 
 class Lottery:
     def __init__(self, loto_name, lottery_config):
@@ -60,9 +69,6 @@ class Lottery:
         }
         response = requests.get(self.__url, headers=headers, stream=True)
         if response.status_code != 200: raise Exception('Error in http response')
-        
-        with open('test.json', 'w') as json_file:
-            json.dump(response.json(), json_file)
 
         soup = BeautifulSoup(response.json()['html'], 'lxml')
         main_table = soup.table
@@ -98,6 +104,8 @@ class Lottery:
         results_df = pd.DataFrame(results_df_list, columns=['Draw_Number', 'Game_Number', 'Matches'])
         
         return results_df
+
+    
 
     def add_game(self, numbers):
         if len(numbers) > self.__lottery_config['max_bet'] or len(numbers) < self.__lottery_config['min_bet']: raise ValueError('Quantity of numbers out of bound')
