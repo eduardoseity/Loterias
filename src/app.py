@@ -1,10 +1,14 @@
 from flask import Flask, Response, request
+from flask_cors import CORS, cross_origin
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
+import os
+os.environ['FLASK_DEBUG'] = '1'
+
 app = Flask(__name__)
-app.debug = True
+CORS(app, supports_credentials=True)
 
 lottery = ''
 
@@ -23,15 +27,14 @@ def lotofacil():
     global lottery
     lottery = Lottery('Lotofacil', lottery_config)
     resp = Response('OK')
-    resp.headers.add('Access-Control-Allow-Origin', '*')
     return resp
 
 @app.route('/addGame', methods=['POST'])
 def add_game():
-    resp = Response('OK')
-    resp.headers.add('Access-Control-Allow-Origin', '*')
-    print(request.args.get("numbers"))
-    return resp
+    numbers = request.get_json()['numbers'].split(',')
+    numbers = [int(i) for i in numbers]
+    lottery.add_game(numbers)
+    return "ok"
 
 class Lottery:
     def __init__(self, loto_name, lottery_config):
@@ -105,8 +108,6 @@ class Lottery:
         
         return results_df
 
-    
-
     def add_game(self, numbers):
         if len(numbers) > self.__lottery_config['max_bet'] or len(numbers) < self.__lottery_config['min_bet']: raise ValueError('Quantity of numbers out of bound')
 
@@ -117,4 +118,4 @@ class Lottery:
         self.__games.append(numbers)
 
 if __name__ == '__main__':
-    pass
+    app.run(debug=True)

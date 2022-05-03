@@ -17,8 +17,8 @@
             var url = "http://localhost:5000/addGame";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('POST', url, true);
-            xmlHTTP.setRequestHeader('Content-type', 'text/html');
-            xmlHTTP.send("numbers=popopo");
+            xmlHTTP.setRequestHeader('Content-type', 'application/json');
+            xmlHTTP.send(JSON.stringify({numbers: document.getElementById('numbers').value}));
         }
     </script>
 </head>
