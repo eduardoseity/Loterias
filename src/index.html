@@ -5,26 +5,67 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loterias</title>
+    <style>
+        .buttonNumberUnchecked, .buttonNumberChecked {
+            width: 50px;
+            height: 30px;
+            margin: 5px;
+        }
+        .buttonNumberChecked {
+            background-color:rgb(140, 216, 241);
+        }
+        .buttonNumberUnchecked {
+            background-color:rgb(237, 243, 245);
+        }
+    </style>
     <script>
+        numbers = []
         function start() {
-            var url = "http://localhost:5000/lotofacil";
+            var url = "http://localhost:4444/lotofacil";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('GET', url);
+            xmlHTTP.withCredentials = true;
             xmlHTTP.send();
+            for (i=1; i<=25; i++) {
+                document.getElementById('buttons').innerHTML += `<button onclick="toggleButton(this, ${i})" id="number${i}" class="buttonNumberUnchecked">${i}</button>`
+                if (i % 5 == 0) {
+                    document.getElementById('buttons').innerHTML += "<br>";
+                }
+            }
         }
         
         function send() {
-            var url = "http://localhost:5000/addGame";
+            var url = "http://localhost:4444/addGame";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('POST', url, true);
+            xmlHTTP.withCredentials = true;
             xmlHTTP.setRequestHeader('Content-type', 'application/json');
-            xmlHTTP.send(JSON.stringify({numbers: document.getElementById('numbers').value}));
+            nums = "";
+            numbers.forEach(n => {
+                nums += n + ",";
+            });
+            xmlHTTP.send(JSON.stringify({numbers: nums}));
+
+            numbers = [];
         }
-    </script>
+
+        function toggleButton(button, value) {
+            if (button.className == "buttonNumberChecked") {
+                button.className = "buttonNumberUnchecked";
+            }
+            else {
+                button.className = "buttonNumberChecked";
+                numbers.push(value);
+            }
+        }
+        </script>
 </head>
 <body onload="start()">
     <h1>LOTERIAS</h1>
     <input type="text" id="numbers">
     <button onclick="send()">Enviar</button>
+    <div id="buttons">
+
+    </div>
 </body>
 </html>

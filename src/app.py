@@ -1,14 +1,13 @@
-from flask import Flask, Response, request
-from flask_cors import CORS, cross_origin
+from flask import Flask, request
+from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-
-import os
-os.environ['FLASK_DEBUG'] = '1'
+import json
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 lottery = ''
 
@@ -26,15 +25,24 @@ def lotofacil():
     }
     global lottery
     lottery = Lottery('Lotofacil', lottery_config)
-    resp = Response('OK')
-    return resp
+    return 'ok'
 
-@app.route('/addGame', methods=['POST'])
+@app.route('/addGame', methods=['POST', 'GET'])
 def add_game():
     numbers = request.get_json()['numbers'].split(',')
+    numbers.remove('')
     numbers = [int(i) for i in numbers]
-    lottery.add_game(numbers)
-    return "ok"
+    try:
+        lottery.add_game(numbers)
+        print(lottery.get_games())
+    except Exception as e:
+        return e.args[0]
+    return 'ok'
+
+@app.route('/getGames')
+def get_games():
+    games = lottery.get_games()
+    return json.dumps(games)
 
 class Lottery:
     def __init__(self, loto_name, lottery_config):
@@ -117,5 +125,8 @@ class Lottery:
             
         self.__games.append(numbers)
 
+    def get_games(self):
+        return self.__games
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='localhost', port=4444)
