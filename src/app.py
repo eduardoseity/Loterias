@@ -25,7 +25,7 @@ def lotofacil():
     }
     global lottery
     lottery = Lottery('Lotofacil', lottery_config)
-    return 'ok'
+    return json.dumps(lottery_config)
 
 @app.route('/addGame', methods=['POST', 'GET'])
 def add_game():
@@ -33,16 +33,24 @@ def add_game():
     numbers.remove('')
     numbers = [int(i) for i in numbers]
     try:
-        lottery.add_game(numbers)
-        print(lottery.get_games())
+        games = lottery.add_game(numbers)
     except Exception as e:
         return e.args[0]
-    return 'ok'
+    return games
 
 @app.route('/getGames')
 def get_games():
     games = lottery.get_games()
     return json.dumps(games)
+
+@app.route('/checkResults', methods=['POST'])
+def check_results():
+    mode = request.get_json()['mode']
+    if mode == 'last':
+        return lottery.check_last_result(lottery.get_games())
+    elif mode == 'all':
+        return lottery.check_all_results(lottery.get_games())
+        
 
 class Lottery:
     def __init__(self, loto_name, lottery_config):
@@ -113,8 +121,9 @@ class Lottery:
                 results_df_list.append([result[0], game, match]) 
         
         results_df = pd.DataFrame(results_df_list, columns=['Draw_Number', 'Game_Number', 'Matches'])
+        results_df.sort_values(by=['Matches'], ascending=False, inplace=True)
         
-        return results_df
+        return results_df.to_html(None)
 
     def add_game(self, numbers):
         if len(numbers) > self.__lottery_config['max_bet'] or len(numbers) < self.__lottery_config['min_bet']: raise ValueError('Quantity of numbers out of bound')
@@ -125,8 +134,16 @@ class Lottery:
             
         self.__games.append(numbers)
 
+        return json.dumps(self.__games)
+
     def get_games(self):
         return self.__games
+
+    def check_last_result(self, picked_list):
+        return self.check_results(self.get_last_result(), picked_list)
+
+    def check_all_results(self, picked_list):
+        return self.check_results(self.get_all_results(), picked_list)
 
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=4444)

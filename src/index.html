@@ -24,20 +24,37 @@
             var url = "http://localhost:4444/lotofacil";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('GET', url);
+            xmlHTTP.onreadystatechange = function() {
+                if (xmlHTTP.readyState === 4) {
+                    var parse = JSON.parse(xmlHTTP.response);
+                    for (i=parse.minor_number; i<=parse.major_number; i++) {
+                        document.getElementById('buttons').innerHTML += `<button onclick="toggleButton(this, ${i})" id="number${i}" class="buttonNumberUnchecked">${i}</button>`
+                        if (i % 5 == 0) {
+                            document.getElementById('buttons').innerHTML += "<br>";
+                        }
+                    }
+                }
+            };
             xmlHTTP.withCredentials = true;
             xmlHTTP.send();
-            for (i=1; i<=25; i++) {
-                document.getElementById('buttons').innerHTML += `<button onclick="toggleButton(this, ${i})" id="number${i}" class="buttonNumberUnchecked">${i}</button>`
-                if (i % 5 == 0) {
-                    document.getElementById('buttons').innerHTML += "<br>";
-                }
-            }
         }
         
         function send() {
             var url = "http://localhost:4444/addGame";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('POST', url, true);
+            xmlHTTP.onreadystatechange = function() {
+                if (xmlHTTP.readyState === 4) {
+                    document.getElementById("gameList").innerHTML = "";
+                    JSON.parse(xmlHTTP.response).forEach(game => {
+                        document.getElementById("gameList").innerHTML += game.sort(function(a,b) {
+                            if (a > b) return 1;
+                            if (a < b) return -1;
+                            return 0;
+                        }) + "<br>";
+                    });
+                }
+            }
             xmlHTTP.withCredentials = true;
             xmlHTTP.setRequestHeader('Content-type', 'application/json');
             nums = "";
@@ -45,27 +62,57 @@
                 nums += n + ",";
             });
             xmlHTTP.send(JSON.stringify({numbers: nums}));
-
-            numbers = [];
+        }
+        
+        function checkResults(mode) {
+            var url = "http://localhost:4444/checkResults";
+            var xmlHTTP = new XMLHttpRequest();
+            xmlHTTP.onreadystatechange = function() {
+                if (xmlHTTP.readyState === 4) {
+                    document.getElementById("resultTable").innerHTML = xmlHTTP.response.replace("Draw_Number", "SORTEIO").replace("Game_Number", "JOGO").replace("Matches", "ACERTOS");
+                }
+            }
+            xmlHTTP.open('POST', url, true);
+            xmlHTTP.withCredentials = true;
+            xmlHTTP.setRequestHeader('Content-type', 'application/json');
+            xmlHTTP.send(JSON.stringify({mode: mode}));
         }
 
-        function toggleButton(button, value) {
+        function toggleButton(button, number) {
             if (button.className == "buttonNumberChecked") {
                 button.className = "buttonNumberUnchecked";
+                numbers = numbers.filter((value, index, arr) => {
+                    return number != value;
+                });
             }
             else {
                 button.className = "buttonNumberChecked";
-                numbers.push(value);
+                numbers.push(number);
             }
+            document.getElementById("numbersList").innerHTML = numbers;
+            document.getElementById("quantity").innerHTML = numbers.length;
         }
         </script>
 </head>
 <body onload="start()">
     <h1>LOTERIAS</h1>
-    <input type="text" id="numbers">
-    <button onclick="send()">Enviar</button>
     <div id="buttons">
-
     </div>
+    <br>
+    <button onclick="send()">Adicionar jogo</button>
+    <br><br>
+    Números escolhidos:
+    <div id="numbersList"></div>
+    <br>
+    Quantidade de números:
+    <div id="quantity"></div>
+    <br>
+    Jogos:
+    <div id="gameList"></div>
+    <br>
+    <button onclick="checkResults('last')">Checar último resultado</button>
+    <button onclick="checkResults('all')">Checar todos os resultados</button>
+    <br><br>
+    <div id="resultTable"></div>
 </body>
 </html>
