@@ -20,14 +20,15 @@
     </style>
     <script>
         numbers = []
+        config = null
         function start() {
             var url = "http://localhost:4444/lotofacil";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('GET', url);
             xmlHTTP.onreadystatechange = function() {
                 if (xmlHTTP.readyState === 4) {
-                    var parse = JSON.parse(xmlHTTP.response);
-                    for (i=parse.minor_number; i<=parse.major_number; i++) {
+                    config = JSON.parse(xmlHTTP.response);
+                    for (i=config.minor_number; i<=config.major_number; i++) {
                         document.getElementById('buttons').innerHTML += `<button onclick="toggleButton(this, ${i})" id="number${i}" class="buttonNumberUnchecked">${i}</button>`
                         if (i % 5 == 0) {
                             document.getElementById('buttons').innerHTML += "<br>";
@@ -46,13 +47,16 @@
             xmlHTTP.onreadystatechange = function() {
                 if (xmlHTTP.readyState === 4) {
                     document.getElementById("gameList").innerHTML = "";
+                    var totalPrice = 0;
                     JSON.parse(xmlHTTP.response).forEach(game => {
                         document.getElementById("gameList").innerHTML += game.sort(function(a,b) {
                             if (a > b) return 1;
                             if (a < b) return -1;
                             return 0;
                         }) + "<br>";
+                        totalPrice += calculatePrice(game.length);
                     });
+                    document.getElementById("listPrice").innerHTML = formatCurrency(totalPrice);
                 }
             }
             xmlHTTP.withCredentials = true;
@@ -91,6 +95,20 @@
             }
             document.getElementById("numbersList").innerHTML = numbers;
             document.getElementById("quantity").innerHTML = numbers.length;
+            document.getElementById("price").innerHTML = formatCurrency(calculatePrice(numbers.length));
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: "currency", currency: "BRL" }).format(value);
+        }
+
+        function calculatePrice(len) {
+            if (len >= config.min_bet && len <= config.max_bet) {
+                return config.bet_prices[String(len)];
+            }
+            else {
+                return 0;
+            }
         }
         </script>
 </head>
@@ -107,8 +125,14 @@
     Quantidade de números:
     <div id="quantity"></div>
     <br>
+    Preço:
+    <div id="price"></div>
+    <br>
     Jogos:
     <div id="gameList"></div>
+    <br>
+    Preço total:
+    <div id="listPrice"></div>
     <br>
     <button onclick="checkResults('last')">Checar último resultado</button>
     <button onclick="checkResults('all')">Checar todos os resultados</button>

@@ -19,7 +19,14 @@ def lotofacil():
         'minor_number': 1,
         'major_number': 25,
         'prizes': [11,12,13,14,15],
-        'bet_prices': [2.5, 40, 340, 2040, 9690, 38760],
+        'bet_prices': {
+            '15': 2.5,
+            '16': 40,
+            '17': 340,
+            '18': 2040,
+            '19': 9690,
+            '20': 38760
+        },
         'first_ball_column': 2,
         'draw_number_column': 0
     }
@@ -27,7 +34,7 @@ def lotofacil():
     lottery = Lottery('Lotofacil', lottery_config)
     return json.dumps(lottery_config)
 
-@app.route('/addGame', methods=['POST', 'GET'])
+@app.route('/addGame', methods=['POST'])
 def add_game():
     numbers = request.get_json()['numbers'].split(',')
     numbers.remove('')
@@ -50,7 +57,6 @@ def check_results():
         return lottery.check_last_result(lottery.get_games())
     elif mode == 'all':
         return lottery.check_all_results(lottery.get_games())
-        
 
 class Lottery:
     def __init__(self, loto_name, lottery_config):
