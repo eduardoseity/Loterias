@@ -22,7 +22,7 @@
         numbers = []
         config = null
         function start() {
-            var url = "http://localhost:4444/lotofacil";
+            var url = "http://localhost:4444/megasena";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('GET', url);
             xmlHTTP.onreadystatechange = function() {
@@ -40,23 +40,13 @@
             xmlHTTP.send();
         }
         
-        function send() {
+        function addGame() {
             var url = "http://localhost:4444/addGame";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('POST', url, true);
             xmlHTTP.onreadystatechange = function() {
                 if (xmlHTTP.readyState === 4) {
-                    document.getElementById("gameList").innerHTML = "";
-                    var totalPrice = 0;
-                    JSON.parse(xmlHTTP.response).forEach(game => {
-                        document.getElementById("gameList").innerHTML += game.sort(function(a,b) {
-                            if (a > b) return 1;
-                            if (a < b) return -1;
-                            return 0;
-                        }) + "<br>";
-                        totalPrice += calculatePrice(game.length);
-                    });
-                    document.getElementById("listPrice").innerHTML = formatCurrency(totalPrice);
+                    updateGameList(JSON.parse(xmlHTTP.response));
                 }
             }
             xmlHTTP.withCredentials = true;
@@ -66,6 +56,33 @@
                 nums += n + ",";
             });
             xmlHTTP.send(JSON.stringify({numbers: nums}));
+        }
+        
+        function deleteGame(index) {
+            var url = "http://localhost:4444/deleteGame?index=" + index;
+            var xmlHTTP = new XMLHttpRequest();
+            xmlHTTP.open('GET', url);
+            xmlHTTP.onreadystatechange = function() {
+                if (xmlHTTP.readyState === 4) {
+                    updateGameList(JSON.parse(xmlHTTP.response));
+                }
+            }
+            xmlHTTP.withCredentials = true;
+            xmlHTTP.send();
+        }
+        
+        function updateGameList(gameList) {
+            var totalPrice = 0;
+            document.getElementById("gameList").innerHTML = "";
+            gameList.forEach((game, index) => {
+                document.getElementById("gameList").innerHTML += `<button onclick='deleteGame(${index})'>X</button> ` + game.sort(function(a,b) {
+                    if (a > b) return 1;
+                    if (a < b) return -1;
+                    return 0;
+                }) + "<br>";
+                totalPrice += calculatePrice(game.length);
+            });
+            document.getElementById("listPrice").innerHTML = formatCurrency(totalPrice);
         }
         
         function checkResults(mode) {
@@ -117,7 +134,7 @@
     <div id="buttons">
     </div>
     <br>
-    <button onclick="send()">Adicionar jogo</button>
+    <button onclick="addGame()">Adicionar jogo</button>
     <br><br>
     Números escolhidos:
     <div id="numbersList"></div>

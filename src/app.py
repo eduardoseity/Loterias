@@ -34,6 +34,33 @@ def lotofacil():
     lottery = Lottery('Lotofacil', lottery_config)
     return json.dumps(lottery_config)
 
+@app.route('/megasena')
+def megasena():
+    lottery_config = {
+        'min_bet': 6,
+        'max_bet': 15,
+        'minor_number': 1,
+        'major_number': 60,
+        'prizes': [5,4],
+        'bet_prices': {
+            '6': 4.5,
+            '7': 31.5,
+            '8': 126,
+            '9': 378,
+            '10': 945,
+            '11': 2079,
+            '12': 4158,
+            '13': 7722,
+            '14': 13513.5,
+            '15': 22522.5
+        },
+        'first_ball_column': 2,
+        'draw_number_column': 0
+    }
+    global lottery
+    lottery = Lottery('Mega-Sena', lottery_config)
+    return json.dumps(lottery_config)
+
 @app.route('/addGame', methods=['POST'])
 def add_game():
     numbers = request.get_json()['numbers'].split(',')
@@ -57,6 +84,11 @@ def check_results():
         return lottery.check_last_result(lottery.get_games())
     elif mode == 'all':
         return lottery.check_all_results(lottery.get_games())
+
+@app.route('/deleteGame', methods=['GET'])
+def delete_game():
+    game_list = lottery.delete_game(int(request.args['index']))
+    return json.dumps(game_list)
 
 class Lottery:
     def __init__(self, loto_name, lottery_config):
@@ -141,6 +173,10 @@ class Lottery:
         self.__games.append(numbers)
 
         return json.dumps(self.__games)
+
+    def delete_game(self, index):
+        del self.__games[index]
+        return self.__games
 
     def get_games(self):
         return self.__games
