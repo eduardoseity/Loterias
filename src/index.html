@@ -22,14 +22,14 @@
         numbers = []
         config = null
         function start() {
-            var url = "http://localhost:4444/megasena";
+            var url = "http://localhost:4444/lotofacil";
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('GET', url);
             xmlHTTP.onreadystatechange = function() {
                 if (xmlHTTP.readyState === 4) {
                     config = JSON.parse(xmlHTTP.response);
                     for (i=config.minor_number; i<=config.major_number; i++) {
-                        document.getElementById('buttons').innerHTML += `<button onclick="toggleButton(this, ${i})" id="number${i}" class="buttonNumberUnchecked">${i}</button>`
+                        document.getElementById('buttons').innerHTML += `<button onclick="toggleButton(this, ${i})" id="number${i}" class="buttonNumberUnchecked">${i}</button>`;
                         if (i % 5 == 0) {
                             document.getElementById('buttons').innerHTML += "<br>";
                         }

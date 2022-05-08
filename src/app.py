@@ -41,7 +41,7 @@ def megasena():
         'max_bet': 15,
         'minor_number': 1,
         'major_number': 60,
-        'prizes': [5,4],
+        'prizes': [6,5,4],
         'bet_prices': {
             '6': 4.5,
             '7': 31.5,
@@ -55,7 +55,9 @@ def megasena():
             '15': 22522.5
         },
         'first_ball_column': 2,
-        'draw_number_column': 0
+        'draw_number_column': 0,
+        'winners_column': 8,
+        'prize_division_column': 11
     }
     global lottery
     lottery = Lottery('Mega-Sena', lottery_config)
@@ -102,13 +104,13 @@ class Lottery:
                 minor_number: the minor number possible,
                 major_number: the major number possible,
                 prizes: the quantity of numbers to receive a prize. ie [11,12,13,14,15],
-                bet_prices: the prices of each bet. ie [2.5, 40, 340, 2040, 9690, 38760],
+                bet_prices: the prices of each bet. ie {15: 2.5, 16: 40, 17: 340, 18: 2040, 19: 9690, 20: 38760},
                 first_ball_column: index column of the first ball,
                 draw_number_column: the number of draw lottery
             }
         '''
         self.__results_table = ''
-        self.__games = []
+        self.__games = [[10,15,17,20,21,35]]
 
         self.__validade_rules()
         self.__get_results()
@@ -135,28 +137,41 @@ class Lottery:
         self.__results_table = pd.read_html(str(main_table))[0]
 
     def get_last_result(self):
-        result = self.__results_table.tail(1)
-        result_list = [result.iloc[:,ball].values[0] for ball in range(self.__lottery_config['first_ball_column'], self.__lottery_config['first_ball_column'] + self.__lottery_config['min_bet'])]
-        return [(result.iloc[:,self.__lottery_config['draw_number_column']].values[0],result_list)]
+        # result = self.__results_table.tail(1)
+        # result_list = [result.iloc[:,ball].values[0] for ball in range(self.__lottery_config['first_ball_column'], self.__lottery_config['first_ball_column'] + self.__lottery_config['min_bet'])]
+        # return [(result.iloc[:,self.__lottery_config['draw_number_column']].values[0],result_list)]
+        return self.__results_table.tail(1)
 
     def get_all_results(self):
-        results = []
-        for result in self.__results_table.itertuples():
-            results.append((result[self.__lottery_config['draw_number_column']+1], [result[ball] for ball in range(self.__lottery_config['first_ball_column']+1, self.__lottery_config['first_ball_column']+ 1 + self.__lottery_config['min_bet'])]))
+        # results = []
+        # for result in self.__results_table.itertuples():
+        #     results.append((result[self.__lottery_config['draw_number_column']+1], [result[ball] for ball in range(self.__lottery_config['first_ball_column']+1, self.__lottery_config['first_ball_column']+ 1 + self.__lottery_config['min_bet'])]))
         
-        return results
+        # return results
+        return self.__results_table
 
-    def check_results(self, result_list, picked_list):
+    def check_results(self, result_dataframe: pd.DataFrame, picked_list):
         results_df_list = []
+        result_info = {
+            'total_bet': 0,
+            'total_bet_price': 0,
+            'total_prize': 0
+        }
 
-        for result in result_list:
+        check_prize = lambda match: print(result_dataframe.iloc[:, self.__lottery_config['prize_division_column'] + self.__lottery_config['prizes'].index(match)])
+        for index, row in result_dataframe.iterrows():
             game = 0
             for picked in picked_list:
                 match = 0
                 game += 1
+                result_info['total_bet'] += 1
+                result_info['total_bet_price'] += self.__lottery_config['bet_prices'][str(len(picked))]
                 for number in picked:
-                    if (number in result[1]) == True: match += 1
-                results_df_list.append([result[0], game, match]) 
+                    if (number in list(row[self.__lottery_config['first_ball_column']:self.__lottery_config['first_ball_column']+self.__lottery_config['min_bet']])) == True: match += 1
+
+                # if (match in self.__lottery_config['prizes']) == True : result_info['total_prize'] += check_prize(match)
+                check_prize(match)
+                results_df_list.append([row[self.__lottery_config['draw_number_column']], game, match]) 
         
         results_df = pd.DataFrame(results_df_list, columns=['Draw_Number', 'Game_Number', 'Matches'])
         results_df.sort_values(by=['Matches'], ascending=False, inplace=True)
