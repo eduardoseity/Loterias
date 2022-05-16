@@ -114,11 +114,11 @@
             document.getElementById("quantity").innerHTML = numbers.length;
             document.getElementById("price").innerHTML = formatCurrency(calculatePrice(numbers.length));
         }
-
+        
         function formatCurrency(value) {
             return new Intl.NumberFormat('pt-BR', { style: "currency", currency: "BRL" }).format(value);
         }
-
+        
         function calculatePrice(len) {
             if (len >= config.min_bet && len <= config.max_bet) {
                 return config.bet_prices[String(len)];
@@ -126,6 +126,19 @@
             else {
                 return 0;
             }
+        }
+        
+        function clearNumbers() {
+            // console.log(document.getElementsByTagName("button"));
+            [...document.getElementsByTagName("button")].forEach(bt => {
+                if (bt.id.indexOf("number") != -1) {
+                    bt.className = "buttonNumberUnchecked";
+                }
+            });
+            numbers = [];
+            document.getElementById("numbersList").innerHTML = numbers;
+            document.getElementById("quantity").innerHTML = numbers.length;
+            document.getElementById("price").innerHTML = formatCurrency(calculatePrice(numbers.length));
         }
         </script>
 </head>
@@ -135,6 +148,7 @@
     </div>
     <br>
     <button onclick="addGame()">Adicionar jogo</button>
+    <button onclick="clearNumbers()">Limpar cartela</button>
     <br><br>
     Números escolhidos:
     <div id="numbersList"></div>
