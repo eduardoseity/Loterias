@@ -166,7 +166,8 @@ class Lottery:
                 results_df_list.append([row[self.__lottery_config['draw_number_column']], game, match]) 
         
         results_df = pd.DataFrame(results_df_list, columns=['Draw_Number', 'Game_Number', 'Matches'])
-        results_df.sort_values(by=['Matches'], ascending=False, inplace=True)
+        results_df.sort_values(by=['Matches'], ascending=False, inplace=True, ignore_index=True)
+        results_df.index += 1
         
         return results_df.to_html(None)
 
