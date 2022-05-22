@@ -21,8 +21,12 @@
     <script>
         numbers = []
         config = null
-        function start() {
-            var url = "http://localhost:4444/megasena";
+        function start(game) {
+            reset();
+            document.getElementById("loaded").style.visibility = "hidden";
+            document.getElementById("loading").style.visibility = "visible";
+            document.getElementById("loading").style.display = "block";
+            var url = "http://localhost:4444/" + game;
             var xmlHTTP = new XMLHttpRequest();
             xmlHTTP.open('GET', url);
             xmlHTTP.onreadystatechange = function() {
@@ -34,12 +38,27 @@
                             document.getElementById('buttons').innerHTML += "<br>";
                         }
                     }
+                    document.getElementById("loaded").style.visibility = "visible";
+                    document.getElementById("loading").style.visibility = "hidden";
+                    document.getElementById("loading").style.display = "none";
                 }
             };
             xmlHTTP.withCredentials = true;
             xmlHTTP.send();
         }
         
+        function reset() {
+            numbers = [];
+            document.getElementById("buttons").innerHTML = "";
+            document.getElementById("numbersList").innerHTML = "";
+            document.getElementById("quantity").innerHTML = "";
+            document.getElementById("price").innerHTML = "";
+            document.getElementById("gameList").innerHTML = "";
+            document.getElementById("listPrice").innerHTML = "";
+            document.getElementById("resultTable").innerHTML = "";
+
+        }
+
         function addGame() {
             var url = "http://localhost:4444/addGame";
             var xmlHTTP = new XMLHttpRequest();
@@ -142,32 +161,46 @@
         }
         </script>
 </head>
-<body onload="start()">
+<body onload="start('megasena')">
     <h1>LOTERIAS</h1>
-    <div id="buttons">
+    Selecione a loteria: 
+    <select id="gameSelect" onchange="start(this.value)">
+        <option value="megasena">Megasena</option>
+        <option value="lotofacil">Lotofacil</option>
+    </select>
+    <div id="loading">
+        <h2>
+            <br>
+            Carregando informações...<br>
+            Por favor aguarde.
+        </h2>
     </div>
-    <br>
-    <button onclick="addGame()">Adicionar jogo</button>
-    <button onclick="clearNumbers()">Limpar cartela</button>
-    <br><br>
-    Números escolhidos:
-    <div id="numbersList"></div>
-    <br>
-    Quantidade de números:
-    <div id="quantity"></div>
-    <br>
-    Preço:
-    <div id="price"></div>
-    <br>
-    Jogos:
-    <div id="gameList"></div>
-    <br>
-    Preço total:
-    <div id="listPrice"></div>
-    <br>
-    <button onclick="checkResults('last')">Checar último resultado</button>
-    <button onclick="checkResults('all')">Checar todos os resultados</button>
-    <br><br>
-    <div id="resultTable"></div>
+    <div id="loaded" style="visibility: hidden;">
+        <div id="buttons">
+        </div>
+        <br>
+        <button onclick="addGame()">Adicionar jogo</button>
+        <button onclick="clearNumbers()">Limpar cartela</button>
+        <br><br>
+        Números escolhidos:
+        <div id="numbersList"></div>
+        <br>
+        Quantidade de números:
+        <div id="quantity"></div>
+        <br>
+        Preço:
+        <div id="price"></div>
+        <br>
+        Jogos:
+        <div id="gameList"></div>
+        <br>
+        Preço total:
+        <div id="listPrice"></div>
+        <br>
+        <button onclick="checkResults('last')">Checar último resultado</button>
+        <button onclick="checkResults('all')">Checar todos os resultados</button>
+        <br><br>
+        <div id="resultTable"></div>
+    </div>
 </body>
 </html>
