@@ -1,2 +1,2 @@
 # Loterias
-Uma projeto para explorar técnicas de raspagem de dados, análise exploratória e estatística
+Um projeto para explorar técnicas de raspagem de dados, análise exploratória e estatística
